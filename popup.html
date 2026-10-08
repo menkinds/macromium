@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>탭 클릭 후 닫기</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h1>탭 클릭 후 닫기</h1>
+
+  <section>
+    <div class="row">
+      <button id="pick" class="secondary">위치 지정</button>
+      <button id="clearTarget" class="link" title="저장된 위치 삭제">지우기</button>
+    </div>
+    <div id="target" class="target">저장된 위치 없음</div>
+  </section>
+
+  <section>
+    <label class="field">클릭 방식
+      <select id="clickMode">
+        <option value="element">요소 (선택자)</option>
+        <option value="coords">좌표 (x, y)</option>
+      </select>
+    </label>
+    <label class="check"><input type="checkbox" id="coordFallback"> 요소를 못 찾으면 좌표로 클릭</label>
+    <label class="field">탭 사이 대기 (초)
+      <input type="number" id="delaySec" min="0" step="0.5">
+    </label>
+    <label class="field">클릭 후 닫기 전 대기 (초)
+      <input type="number" id="afterClickSec" min="0" step="0.5">
+    </label>
+    <label class="field">요소 찾기 최대 대기 (초)
+      <input type="number" id="findTimeoutSec" min="0" step="1">
+    </label>
+    <label class="field">순서
+      <select id="order">
+        <option value="current">현재 탭부터 오른쪽으로</option>
+        <option value="first">맨 왼쪽 탭부터 오른쪽으로</option>
+      </select>
+    </label>
+    <label class="field">못 찾으면
+      <select id="onNotFound">
+        <option value="stop">중지</option>
+        <option value="skip">건너뛰기 (탭 유지)</option>
+      </select>
+    </label>
+  </section>
+
+  <section>
+    <div class="row">
+      <button id="start">시작</button>
+      <button id="stop" class="danger">중지</button>
+    </div>
+    <div id="progress" class="progress">대기 중</div>
+    <div id="status" class="status"></div>
+    <details>
+      <summary>기록</summary>
+      <pre id="log"></pre>
+    </details>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>

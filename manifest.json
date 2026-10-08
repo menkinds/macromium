@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "탭 클릭 후 닫기",
+  "short_name": "탭클릭닫기",
+  "version": "1.0.0",
+  "description": "각 탭에서 지정한 위치를 클릭한 뒤 탭을 닫고, 지정한 간격으로 다음 탭을 반복 처리합니다. 마지막 탭 하나는 항상 남깁니다.",
+  "permissions": ["tabs", "scripting", "storage", "alarms"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "탭 클릭 후 닫기",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
