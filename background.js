@@ -15,6 +15,8 @@ const DEFAULT_SETTINGS = {
 let timer = null;
 let keepAlive = null;
 let stepping = false;
+let badgeTimer = null;
+let badgeNextAt = 0;
 
 // ---------- 저장소 헬퍼 ----------
 async function getSettings() {
@@ -33,6 +35,7 @@ async function setRun(run) {
     run.stopped = true;
   }
   await chrome.storage.local.set({ run });
+  if (!run.running) clearBadge();
 }
 async function log(run, msg) {
   const t = new Date().toLocaleTimeString('ko-KR', { hour12: false });
@@ -42,6 +45,33 @@ async function log(run, msg) {
   run.status = msg;
   await setRun(run);
 }
+
+// ---------- 아이콘 배지: 다음 실행까지 남은 초 ----------
+// 1초마다 확장 API를 호출하므로 대기 중에도 서비스 워커가 잠들지 않습니다.
+chrome.action.setBadgeBackgroundColor({ color: '#2F7A2C' });
+if (chrome.action.setBadgeTextColor) chrome.action.setBadgeTextColor({ color: '#FFFFFF' });
+
+function badgeText() {
+  const sec = Math.ceil((badgeNextAt - Date.now()) / 1000);
+  if (sec <= 0) return '…'; // 지금 클릭/닫기 중
+  if (sec < 100) return String(sec);
+  return Math.ceil(sec / 60) + 'm';
+}
+function startBadge(nextAt) {
+  badgeNextAt = nextAt;
+  chrome.action.setBadgeText({ text: badgeText() });
+  if (!badgeTimer) badgeTimer = setInterval(() => chrome.action.setBadgeText({ text: badgeText() }), 1000);
+}
+function clearBadge() {
+  if (badgeTimer) { clearInterval(badgeTimer); badgeTimer = null; }
+  chrome.action.setBadgeText({ text: '' });
+}
+
+// 서비스 워커가 다시 깨어났을 때 배지 복구
+getRun().then((run) => {
+  if (run && run.running) startBadge(run.nextAt);
+  else clearBadge();
+});
 
 // ---------- 스케줄링 ----------
 // 30초 미만: setTimeout + keep-alive(20초마다 확장 API 호출) + 백업 알람
@@ -54,8 +84,10 @@ function clearTimers() {
 async function schedule(run, ms) {
   clearTimers();
   run.nextAt = Date.now() + ms;
+  run.waitMs = ms; // 팝업의 진행 링 표시용
   await setRun(run);
   if (!run.running) return;
+  startBadge(run.nextAt);
   if (ms >= 30000) {
     await chrome.alarms.create(ALARM, { when: run.nextAt });
   } else {

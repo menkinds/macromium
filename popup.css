@@ -1,17 +1,110 @@
-body { width: 300px; margin: 0; padding: 12px; font: 13px/1.4 system-ui, "Malgun Gothic", sans-serif; color: #111827; }
-h1 { font-size: 15px; margin: 0 0 10px; }
-section { border-top: 1px solid #e5e7eb; padding: 8px 0; }
-.row { display: flex; gap: 8px; align-items: center; }
-button { flex: 1; padding: 7px 10px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; font-size: 13px; cursor: pointer; }
-button:disabled { opacity: .45; cursor: default; }
-button.secondary { background: #4b5563; }
-button.danger { background: #dc2626; }
-button.link { flex: 0 0 auto; background: none; color: #6b7280; text-decoration: underline; padding: 4px; }
-.target { margin-top: 6px; font-size: 12px; color: #374151; word-break: break-all; background: #f3f4f6; padding: 6px; border-radius: 4px; }
-.field { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; gap: 8px; }
-.field input, .field select { width: 140px; padding: 3px 4px; }
-.check { display: block; margin: 4px 0; font-size: 12px; }
-.progress { margin-top: 8px; font-size: 16px; font-weight: 600; text-align: center; }
-.status { font-size: 12px; color: #4b5563; text-align: center; min-height: 1.4em; word-break: break-all; }
-.status.error { color: #dc2626; }
-pre { max-height: 140px; overflow: auto; font-size: 11px; white-space: pre-wrap; background: #f9fafb; padding: 4px; margin: 4px 0 0; }
+:root {
+  --bg: #FFF9E8;
+  --card: #FFFFFF;
+  --line: #F1E3B8;
+  --text: #3A2E0A;
+  --muted: #8A7745;
+  --yuzu: #FBC92B;
+  --yuzu-deep: #E9A010;
+  --leaf: #3F9B3A;
+  --danger: #D9483B;
+  --field: #FFFDF5;
+  --track: #F6EBC8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1C1A14;
+    --card: #26231B;
+    --line: #3A3526;
+    --text: #F4EBD0;
+    --muted: #B3A57D;
+    --field: #1F1C15;
+    --track: #3A3526;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  width: 340px; margin: 0; padding: 14px;
+  font: 13px/1.45 system-ui, "Pretendard", "Malgun Gothic", sans-serif;
+  color: var(--text); background: var(--bg);
+}
+
+header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.logo { width: 40px; height: 40px; filter: drop-shadow(0 2px 3px rgba(201,131,8,.3)); }
+h1 { font-size: 16px; margin: 0; letter-spacing: -.2px; }
+.sub { margin: 0; font-size: 11.5px; color: var(--muted); }
+h2 { font-size: 12px; margin: 0 0 8px; color: var(--muted); font-weight: 600; letter-spacing: .2px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+  padding: 12px; margin-bottom: 10px;
+  box-shadow: 0 1px 2px rgba(120, 90, 10, .06);
+}
+.card-head { display: flex; justify-content: space-between; align-items: center; }
+.card-head h2 { margin: 0; }
+
+/* 카운트다운 */
+.timer { display: flex; gap: 14px; align-items: center; }
+.ring { position: relative; width: 96px; height: 96px; flex: none; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 9; }
+.ring .track { stroke: var(--track); }
+.ring .bar {
+  stroke: var(--yuzu); stroke-linecap: round;
+  stroke-dasharray: 100; stroke-dashoffset: 100;
+  transition: stroke-dashoffset .25s linear;
+}
+.ring-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.count { font-size: 26px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.count-label { font-size: 10.5px; color: var(--muted); margin-top: 3px; text-align: center; }
+.timer-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.progress { font-size: 15px; font-weight: 700; }
+.bar-line { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.bar-line div { height: 100%; width: 0; background: var(--leaf); border-radius: 3px; transition: width .3s; }
+.status { font-size: 11.5px; color: var(--muted); min-height: 1.4em; word-break: break-all; }
+.status.error { color: var(--danger); }
+
+/* 버튼 */
+.row { display: flex; gap: 8px; }
+button {
+  flex: 1; padding: 8px 10px; border: 0; border-radius: 10px;
+  font: inherit; font-weight: 600; cursor: pointer;
+  transition: filter .15s, transform .05s;
+}
+button:hover:not(:disabled) { filter: brightness(.96); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: .4; cursor: default; }
+button.primary { background: var(--yuzu); color: #3A2E0A; box-shadow: inset 0 -2px 0 var(--yuzu-deep); }
+button.danger { background: transparent; color: var(--danger); border: 1.5px solid currentColor; }
+button.secondary { width: 100%; margin-top: 8px; background: var(--field); color: var(--text); border: 1.5px dashed var(--yuzu-deep); }
+button.link { flex: none; padding: 2px 4px; background: none; color: var(--muted); font-weight: 400; font-size: 12px; text-decoration: underline; }
+
+.target {
+  margin-top: 8px; font-size: 11.5px; word-break: break-all; white-space: pre-wrap;
+  background: var(--field); border: 1px solid var(--line); padding: 7px 8px; border-radius: 8px;
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+/* 설정 */
+.field { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 7px 0; }
+.field select, .field input {
+  font: inherit; color: var(--text); background: var(--field);
+  border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px;
+}
+.field select { width: 172px; }
+.field input { width: 64px; text-align: right; }
+.field select:focus, .field input:focus { outline: 2px solid var(--yuzu); outline-offset: -1px; }
+.unit { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
+.check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin: 2px 0 6px; }
+.check input { accent-color: var(--leaf); }
+
+/* 기록 */
+.log summary { cursor: pointer; font-size: 12px; color: var(--muted); font-weight: 600; }
+pre {
+  max-height: 140px; overflow: auto; font-size: 11px; white-space: pre-wrap;
+  background: var(--field); border-radius: 8px; padding: 6px; margin: 8px 0 0;
+}
