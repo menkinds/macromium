@@ -1,0 +1,33 @@
+name: Release
+
+# Actions 탭에서 수동 실행하면 manifest.json 의 version 으로 태그와 릴리스 zip 을 만듭니다.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build zip
+        run: |
+          VERSION=$(jq -r .version manifest.json)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          mkdir -p build/macromium/icons
+          cp manifest.json background.js picker.js popup.html popup.css popup.js README_KO.md build/macromium/
+          cp icons/icon16.png icons/icon48.png icons/icon128.png icons/yuzu.svg build/macromium/icons/
+          (cd build && zip -r "../macromium-v$VERSION.zip" macromium)
+          unzip -l "macromium-v$VERSION.zip"
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$VERSION" "macromium-v$VERSION.zip" \
+            --target "$GITHUB_SHA" \
+            --title "macromium v$VERSION" \
+            --notes "Chromium MV3 extension: click a chosen element in each tab, close that tab, wait, and repeat until one tab remains."
