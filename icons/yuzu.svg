@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <radialGradient id="peel" cx="38%" cy="36%" r="72%">
+      <stop offset="0" stop-color="#FFE873"/>
+      <stop offset=".55" stop-color="#FBCB2D"/>
+      <stop offset="1" stop-color="#E9A010"/>
+    </radialGradient>
+    <linearGradient id="leaf" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#3F9B3A"/>
+      <stop offset="1" stop-color="#7DCB4F"/>
+    </linearGradient>
+  </defs>
+  <!-- 열매 -->
+  <path d="M64 34 C70 28 84 27 96 34 C110 42 118 56 117 74 C116 98 96 118 64 118 C32 118 12 98 11 74 C10 56 18 42 32 34 C44 27 58 28 64 34 Z"
+        fill="url(#peel)" stroke="#C98308" stroke-width="2"/>
+  <!-- 울퉁불퉁한 껍질 점 -->
+  <g fill="#C98308" opacity=".28">
+    <circle cx="86" cy="58" r="2.2"/><circle cx="98" cy="72" r="2"/><circle cx="80" cy="84" r="2.4"/>
+    <circle cx="94" cy="96" r="2"/><circle cx="66" cy="100" r="2.2"/><circle cx="48" cy="92" r="2"/>
+    <circle cx="34" cy="80" r="2.2"/><circle cx="62" cy="70" r="1.8"/><circle cx="74" cy="52" r="1.8"/>
+    <circle cx="104" cy="84" r="1.8"/><circle cx="78" cy="106" r="1.8"/><circle cx="28" cy="62" r="1.6"/>
+  </g>
+  <!-- 하이라이트 -->
+  <ellipse cx="42" cy="58" rx="13" ry="8" transform="rotate(-35 42 58)" fill="#fff" opacity=".6"/>
+  <circle cx="30" cy="74" r="3" fill="#fff" opacity=".45"/>
+  <!-- 꼭지와 잎 -->
+  <path d="M64 36 C63 30 62 26 60 22" stroke="#6B4A1E" stroke-width="4" stroke-linecap="round" fill="none"/>
+  <path d="M62 26 C70 10 90 4 110 8 C104 24 86 34 62 26 Z" fill="url(#leaf)" stroke="#2F7A2C" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M66 25 C80 18 92 14 104 11" stroke="#2F7A2C" stroke-width="1.8" stroke-linecap="round" fill="none" opacity=".7"/>
+</svg>
