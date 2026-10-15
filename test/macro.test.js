@@ -1,8 +1,13 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const test = require('node:test');
+const { test } = require('node:test');
 const vm = require('node:vm');
+
+const cases = [];
+function serial(name, fn) {
+  cases.push({ name, fn });
+}
 
 const root = path.join(__dirname, '..');
 const realSetTimeout = setTimeout;
@@ -119,7 +124,7 @@ function loadBackground({ tabs, settings, target = TARGET, instant = true }) {
 
   const context = {
     chrome,
-    console,
+    console: { log() {}, info() {}, warn() {}, error() {} },
     Date, Math, Number, String, Boolean, Array, Object, Promise,
     RegExp, Error, TypeError, JSON, Symbol, parseInt, parseFloat,
     isNaN, isFinite, NaN, Infinity, undefined, structuredClone, queueMicrotask,
@@ -200,8 +205,15 @@ function createTimerApi({ instant, timeouts, intervals }) {
       }
     } finally {
       pumping = false;
-      if (!stopped && queue.length) pump();
+      if (!stopped && queue.length) startPump();
     }
+  }
+
+  function startPump() {
+    pump().catch(() => {
+      stopped = true;
+      queue.length = 0;
+    });
   }
 
   return {
@@ -209,7 +221,7 @@ function createTimerApi({ instant, timeouts, intervals }) {
     setTimeout(fn, ms) {
       const id = seq++;
       queue.push({ id, fn, at: now + Math.max(0, Number(ms) || 0) });
-      pump();
+      startPump();
       return id;
     },
     clearTimeout(id) {
@@ -302,7 +314,7 @@ function loadPopup(settings) {
   };
 }
 
-test('click every open tab and leave only the last one open', async (t) => {
+serial('click every open tab and leave only the last one open', async (t) => {
   for (const count of [2, 6]) {
     await t.test(count + ' tabs', async () => {
       const tabs = makeTabs(count);
@@ -326,7 +338,7 @@ test('click every open tab and leave only the last one open', async (t) => {
   }
 });
 
-test('current-tab order clicks the wrapped last tab and does not close it', async () => {
+serial('current-tab order clicks the wrapped last tab and does not close it', async () => {
   const tabs = makeTabs(6);
   const env = loadBackground({ tabs, settings: baseSettings({ order: 'current', initialDelaySec: 0 }) });
   try {
@@ -341,7 +353,7 @@ test('current-tab order clicks the wrapped last tab and does not close it', asyn
   }
 });
 
-test('initial delay is configurable and defaults to no wait before the first click', async () => {
+serial('initial delay is configurable and defaults to no wait before the first click', async () => {
   const tabs = makeTabs(6);
 
   const custom = loadBackground({
@@ -393,7 +405,7 @@ test('initial delay is configurable and defaults to no wait before the first cli
   }
 });
 
-test('initial delay is only before the first click; later tabs use the between-tab delay', async () => {
+serial('initial delay is only before the first click; later tabs use the between-tab delay', async () => {
   const tabs = makeTabs(6);
   const env = loadBackground({
     tabs,
@@ -424,7 +436,7 @@ test('initial delay is only before the first click; later tabs use the between-t
   }
 });
 
-test('settings popup has a first-click delay field defaulting to 0 seconds', async () => {
+serial('settings popup has a first-click delay field defaulting to 0 seconds', async () => {
   const html = fs.readFileSync(path.join(root, 'popup.html'), 'utf8');
   assert.match(html, /첫 클릭 전 대기[\s\S]{0,160}id="initialDelaySec"/);
 
@@ -442,4 +454,8 @@ test('settings popup has a first-click delay field defaulting to 0 seconds', asy
   } finally {
     env.cleanup();
   }
+});
+
+test('macro behavior', async (t) => {
+  for (const item of cases) await t.test(item.name, item.fn);
 });
