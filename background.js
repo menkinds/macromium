@@ -3,6 +3,7 @@
 
 const ALARM = 'tcc-step';
 const DEFAULT_SETTINGS = {
+  initialDelaySec: 0,   // 시작 후 첫 클릭 전에만 기다리는 시간
   delaySec: 5,          // 단계(탭) 사이 대기 시간
   afterClickSec: 1,     // 클릭 후 닫기 전 대기 시간
   order: 'current',     // 'current' = 현재 탭부터 오른쪽으로 / 'first' = 맨 왼쪽 탭부터
@@ -11,6 +12,12 @@ const DEFAULT_SETTINGS = {
   onNotFound: 'stop',   // 'stop' | 'skip'
   findTimeoutSec: 5     // 요소가 나타날 때까지 기다리는 최대 시간
 };
+
+function secondsToMs(sec) {
+  const n = Number(sec);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return n * 1000;
+}
 
 let timer = null;
 let keepAlive = null;
@@ -125,8 +132,8 @@ async function start(windowId, activeTabId) {
     const i = Math.max(0, tabs.findIndex((t) => t.id === activeTabId));
     ordered = tabs.slice(i).concat(tabs.slice(0, i)); // 현재 탭 → 오른쪽 끝 → 맨 왼쪽부터 이어서
   }
-  const queue = ordered.slice(0, ordered.length - 1).map((t) => t.id); // N-1개 처리, 마지막 1개는 남김
-  const keepTabId = ordered[ordered.length - 1].id;
+  const queue = ordered.map((t) => t.id); // 마지막 탭까지 클릭하고, 그 탭만 닫지 않음
+  const keepTabId = queue[queue.length - 1];
 
   clearTimers();
   await chrome.alarms.clear(ALARM);
@@ -137,15 +144,17 @@ async function start(windowId, activeTabId) {
     keepTabId,
     index: 0,
     phase: 'click', // 'click' → (afterClick 대기) → 'close' → (delay 대기) → 다음 탭 'click'
+    // 마지막 탭은 click 뒤 닫지 않고 끝낸다. 첫 click 전 대기는 initialDelaySec.
     done: 0,
+    closed: 0,
     skipped: 0,
     total: queue.length,
     nextAt: 0,
     startedAt: Date.now(),
     log: []
   };
-  await log(run, `시작: 탭 ${tabs.length}개 중 ${queue.length}개 처리 예정 (1개는 남김)`);
-  await schedule(run, 0);
+  await log(run, `시작: 탭 ${queue.length}개 모두 클릭, ${queue.length - 1}개 닫기 예정 (마지막 탭은 클릭 후 유지)`);
+  await schedule(run, secondsToMs(settings.initialDelaySec));
   return { ok: true };
 }
 
@@ -167,7 +176,8 @@ async function finish(run) {
   await chrome.alarms.clear(ALARM);
   run.running = false;
   run.nextAt = 0;
-  await log(run, `완료: ${run.done}/${run.total} 닫음` + (run.skipped ? `, ${run.skipped}개 건너뜀` : ''));
+  const closed = run.closed || 0;
+  await log(run, `완료: ${run.done}/${run.total} 처리, ${closed}개 닫음` + (run.skipped ? `, ${run.skipped}개 건너뜀` : '') + ' (마지막 탭은 닫지 않음)');
 }
 
 // ---------- 한 단계 실행 ----------
@@ -221,7 +231,7 @@ async function advance(run, settings) {
   run.index += 1;
   run.phase = 'click';
   if (run.index >= run.queue.length) return finish(run);
-  await schedule(run, Math.max(0, settings.delaySec) * 1000);
+  await schedule(run, secondsToMs(settings.delaySec));
 }
 
 async function doClick(run) {
@@ -273,15 +283,25 @@ async function doClick(run) {
     return;
   }
 
-  await log(run, `탭 ${no} "${title}": 클릭 완료 (${result.method})`);
+  const isLast = run.index === run.queue.length - 1;
+  await log(run, `탭 ${no} "${title}": 클릭 완료 (${result.method})` + (isLast ? ' — 마지막 탭이라 닫지 않음' : ''));
+  if (isLast) {
+    run.done += 1;
+    return finish(run);
+  }
   run.phase = 'close';
-  await schedule(run, Math.max(0, settings.afterClickSec) * 1000);
+  await schedule(run, secondsToMs(settings.afterClickSec));
 }
 
 async function doClose(run) {
   const settings = await getSettings();
   const tabId = run.queue[run.index];
   const no = run.index + 1;
+
+  if (tabId === run.keepTabId || run.index === run.queue.length - 1) {
+    await log(run, '마지막 탭은 닫지 않고 종료합니다.');
+    return finish(run);
+  }
 
   const tab = await tabExists(tabId);
   if (tab) {
@@ -297,9 +317,11 @@ async function doClose(run) {
     if (!(await isStillRunning(run))) return;
     await chrome.tabs.remove(tabId);
     run.done += 1;
+    run.closed = (run.closed || 0) + 1;
     await log(run, `탭 ${no} 닫음 — ${run.done}/${run.total} 완료`);
   } else {
     run.done += 1;
+    run.closed = (run.closed || 0) + 1;
     await log(run, `탭 ${no}: 이미 닫혀 있음 — ${run.done}/${run.total} 완료`);
   }
   return advance(run, settings);

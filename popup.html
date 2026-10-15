@@ -10,7 +10,7 @@
     <img src="icons/yuzu.svg" alt="" class="logo">
     <div>
       <h1>탭 클릭 후 닫기</h1>
-      <p class="sub">클릭 → 닫기 → 대기, 마지막 탭은 남겨요</p>
+      <p class="sub">클릭 → 닫기 → 대기, 마지막 탭은 클릭 후 유지</p>
     </div>
   </header>
 
@@ -54,6 +54,9 @@
       </select>
     </label>
     <label class="check"><input type="checkbox" id="coordFallback"> 요소를 못 찾으면 좌표로 클릭</label>
+    <label class="field"><span>첫 클릭 전 대기</span>
+      <span class="unit"><input type="number" id="initialDelaySec" min="0" step="0.5">초</span>
+    </label>
     <label class="field"><span>탭 사이 대기</span>
       <span class="unit"><input type="number" id="delaySec" min="0" step="0.5">초</span>
     </label>
