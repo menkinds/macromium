@@ -1,4 +1,5 @@
 const DEFAULTS = {
+  initialDelaySec: 0,
   delaySec: 5,
   afterClickSec: 1,
   order: 'current',
@@ -7,7 +8,7 @@ const DEFAULTS = {
   onNotFound: 'stop',
   findTimeoutSec: 5
 };
-const FIELDS = ['delaySec', 'afterClickSec', 'findTimeoutSec', 'order', 'clickMode', 'coordFallback', 'onNotFound'];
+const FIELDS = ['initialDelaySec', 'delaySec', 'afterClickSec', 'findTimeoutSec', 'order', 'clickMode', 'coordFallback', 'onNotFound'];
 const $ = (id) => document.getElementById(id);
 let currentRun = null;
 

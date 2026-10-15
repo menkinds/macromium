@@ -30,4 +30,4 @@ jobs:
           gh release create "v$VERSION" "macromium-v$VERSION.zip" \
             --target "$GITHUB_SHA" \
             --title "macromium v$VERSION" \
-            --notes "Chromium MV3 extension: click a chosen element in each tab, close that tab, wait, and repeat until one tab remains."
+            --notes "Chromium MV3 extension: click a chosen element in every tab, close each tab except the last, and leave that last tab open after its click."
