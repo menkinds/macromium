@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "탭 클릭 후 닫기",
   "short_name": "탭클릭닫기",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "각 탭에서 지정한 위치를 클릭합니다. 마지막 탭은 클릭만 하고 닫지 않으며, 첫 클릭 전 대기를 설정할 수 있습니다.",
   "permissions": ["tabs", "scripting", "storage", "alarms"],
   "host_permissions": ["<all_urls>"],
